@@ -1,0 +1,9 @@
+[webservers]
+# Add hosts here
+
+
+[webservers:vars]
+# Local variables for Ansible playbooks
+ansible_ssh_user=ec2-user
+github_user=minelminel
+app_name=flask-ansible-nginx
