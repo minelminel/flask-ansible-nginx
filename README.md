@@ -108,3 +108,54 @@ ansible webservers -m setup
 ## TODO
 
 Add [CI](https://www.jeffgeerling.com/blog/testing-ansible-roles-travis-ci-github)
+
+---
+
+# Ensure a list of yum packages are installed
+```bash
+~]$ which pip
+  /usr/local/bin/pip
+~]$ which python
+  /usr/bin/python
+~]$ which python3
+  /usr/bin/python3
+~]$ which pip3
+  /usr/local/bin/pip3
+```
+
+# after amazon linux extras
+```bash
+~]$ which pip
+  /usr/local/bin/pip
+~]$ which python
+  /usr/bin/python
+~]$ which python3
+  /usr/bin/python3
+~]$ which pip3
+  /usr/local/bin/pip3
+```
+
+# updated pip only
+```bash
+~]$ which pip
+  /usr/local/bin/pip
+~]$ which python
+  /usr/bin/python
+~]$ which python3
+  /usr/bin/python3
+~]$ which pip3
+  /usr/local/bin/pip3
+```
+---
+# ..when the app is ready to be installed
+```bash
+$ which pip
+  /usr/local/bin/pip
+$ which pip3
+  /usr/local/bin/pip3
+$ which python
+  /usr/bin/python
+$ which python3
+  /usr/bin/python3
+
+```
