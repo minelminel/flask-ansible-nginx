@@ -1,10 +1,10 @@
 [webservers]
 # Add hosts here
-18.221.170.23
+18.218.83.119
 
 [webservers:vars]
 # Local variables for Ansible playbooks
 ansible_ssh_user=ec2-user
 github_user=minelminel
 app_name=flask-ansible-nginx
-server_host=18.221.170.23
+server_host=18.218.83.119
