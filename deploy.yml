@@ -22,7 +22,6 @@
         update_cache: yes
       vars:
         packages:
-        # - amazon-linux-extras
         - python3-pip
         - python3-devel
         - tree
@@ -31,7 +30,7 @@
         - nginx
         - firewalld
 
-    - name: Update pip, setuptools & wheel
+    - name: Update core pip packages
       pip:
         name:
           # - pip
@@ -62,7 +61,6 @@
 # Configure app systemd service and nginx
 - hosts: webservers
   become: yes
-  become_method: sudo
   tasks:
   - name: Template systemd service config
     template:
@@ -80,12 +78,13 @@
   - name: Remove default nginx site config
     file: path=/etc/nginx/default.d/default state=absent
 
-#   - name: Remove default nginx symlink
-#     file: path=/etc/nginx/nginx.conf state=absent
+  # - name: Remove default nginx symlink
+  #   file: path=/etc/nginx/default.d/default state=absent
 
-  - name: Enable nginx site
+  - name: Link nginx site configuration
     file:
-      src: /etc/nginx/conf.d/{{ app_name }}.conf
+      # src: /etc/nginx/conf.d/{{ app_name }}.conf
+      src: /etc/nginx/nginx.conf
       dest: /etc/nginx/default.d/default
       state: link
       force: yes
@@ -94,11 +93,11 @@
   - name: Restart nginx
     systemd: name=nginx state=restarted enabled=yes
 
-  # - name: Open firewall for nginx
-  #   ufw:
-  #     name: Nginx Full Access
-  #     rule: allow
-  #     state: enabled
+  - name: Open firewall for nginx
+    firewalld:
+      name: Nginx Full Access
+      rule: allow
+      state: enabled
       # direction: outgoing
 
 # # Run a quick test to verify the site is working
