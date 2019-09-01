@@ -7,3 +7,4 @@
 ansible_ssh_user=ec2-user
 github_user=minelminel
 app_name=flask-ansible-nginx
+server_host=18.221.170.23
