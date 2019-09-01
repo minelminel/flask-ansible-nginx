@@ -1,21 +1,22 @@
-# Ansible playbook for deploying a Flask app
----
-# Install system yum packages
+# Install system dnf packages
 - hosts: webservers
+  gather_facts: no
   become: yes
   tasks:
+    - debug: var=hostvars[inventory_hostname]['ansible_python_interpreter']
+
     - set_fact:
         ansible_facts:
-          pkg_mgr: yum
+          pkg_mgr: dnf
 
     - name: Update all packages
-      yum:
+      dnf:
         name: '*'
         state: latest
         update_only: yes
 
-    - name: Ensure a list of yum packages are installed
-      yum:
+    - name: Ensure a list of dnf packages are installed
+      dnf:
         name: "{{ packages }}"
         state: latest
         update_cache: yes
@@ -26,35 +27,24 @@
         - python3-devel
         - tree
         - git
+        - vim
+        - nginx
+        - firewalld
 
-    - name: Install amazon-linux-extras packages
-      shell: "amazon-linux-extras install -y {{ item }}"
-      with_items:
-        - epel
-        - nginx1.12
-
-    - name: Update pip first
+    - name: Update pip, setuptools & wheel
       pip:
         name:
-          - pip
-        executable:  /usr/local/bin/pip3
-        state: latest
-
-    - name: Update setuptools & wheel
-      pip:
-        name:
+          # - pip
           - setuptools
           - wheel
-        executable:  /usr/local/bin/pip
         state: latest
 
     - name: Install virtualenv
       pip:
         name: virtualenv
-        executable:  /usr/local/bin/pip3
         state: present
 
-    # Install the app, note: don't do these tasks with become sudo
+# Install the app, note: don't do these tasks with become sudo
 - hosts: webservers
   tasks:
     - name: Clone repository
@@ -74,7 +64,7 @@
   become: yes
   become_method: sudo
   tasks:
-  - name: template systemd service config
+  - name: Template systemd service config
     template:
       src: .service
       dest: /etc/systemd/system/{{ app_name }}.service
@@ -87,15 +77,16 @@
       src: .nginx
       dest: /etc/nginx/conf.d/{{ app_name }}.conf
 
-# skip this portion
-#   - name: Remove default nginx site config
-#     file: path=/etc/nginx/conf.d/default.conf state=absent
+  - name: Remove default nginx site config
+    file: path=/etc/nginx/default.d/default state=absent
+
+#   - name: Remove default nginx symlink
+#     file: path=/etc/nginx/nginx.conf state=absent
 
   - name: Enable nginx site
     file:
-      # src: /etc/nginx/conf.d/{{ app_name }}.conf
-      src: /etc/nginx/nginx.conf
-      dest: /etc/nginx/default.d/default.conf
+      src: /etc/nginx/conf.d/{{ app_name }}.conf
+      dest: /etc/nginx/default.d/default
       state: link
       force: yes
       follow: yes
@@ -103,17 +94,19 @@
   - name: Restart nginx
     systemd: name=nginx state=restarted enabled=yes
 
-  - name: Open firewall for nginx
-    ufw:
-      rule: allow
-      name: Nginx Full
+  # - name: Open firewall for nginx
+  #   ufw:
+  #     name: Nginx Full Access
+  #     rule: allow
+  #     state: enabled
+      # direction: outgoing
 
 # # Run a quick test to verify the site is working
 # - hosts: webservers
 #   tasks:
 #   - name: get url
 #     get_url:
-#       url: http://{{inventory_hostname}}
+#       url: http://{{ inventory_hostname }}
 #       dest: /tmp/index.html
 #   - name: read html
 #     shell: cat /tmp/index.html

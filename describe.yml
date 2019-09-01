@@ -1,0 +1,30 @@
+---
+- hosts: localhost
+  gather_facts: no
+  vars:
+    ip_list: []
+
+  tasks:
+    - name: Gettings Public IP from instance
+      ec2_instance_facts:
+        region: us-east-2
+        filters:
+          instance-state-name: ["running"]
+          # instance-state-name: ["running", "terminated", "stopped"]
+          # "tag: Name": michael
+      register: ec2_metadata
+
+    - name: Add Public IP to list
+      set_fact:
+        ip_list: "{{ ip_list }} + [ '{{ item.public_ip_address }}' ]"
+      with_items: "{{ ec2_metadata.instances }}"
+
+    # - name: Print the list of public IPs
+    #   debug:
+    #     var: ip_list
+
+    - name: Add host to group `discovered`
+      add_host:
+        host: "{{ item }}"
+        groups: discovered
+      with_items: "{{ ip_list }}"
